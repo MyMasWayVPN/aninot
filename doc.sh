@@ -74,7 +74,7 @@ PASSWORD=${PASSWORD:-admin}
 cat > /usr/local/bin/run-windows.sh <<EOF
 #!/bin/bash
 docker run --rm \\
-  --name windowws \\
+  --name windows \\
   -p ${WEB_PORT}:8006 \\
   -p ${RDP_PORT}:3389/tcp \\
   -p ${RDP_PORT}:3389/udp \\
