@@ -2,21 +2,21 @@
 
 # --- MENU WINDOWS VERSION ---
 echo "Pilih versi Windows:"
-echo "1. Windows 11 Pro (4.8GB)"
-echo "2. Windows 11 LTSC (4.7GB)"
-echo "3. Windows 11 Enterprise (4.8GB)"
-echo "4. Windows 10 Pro (3.5GB)"
-echo "5. Windows 10 LTSC (4.1GB)"
-echo "6. Windows 10 Enterprise (3.4GB)"
+echo "01 | 1) Windows 11 Pro (4.8GB)"
+echo "02 | 2) Windows 11 LTSC (4.7GB)"
+echo "03 | 3) Windows 11 Enterprise (4.8GB)"
+echo "04 | 4) Windows 10 Pro (3.5GB)"
+echo "05 | 5) Windows 10 LTSC (4.1GB)"
+echo "06 | 6) Windows 10 Enterprise (3.4GB)"
 read -p "Masukkan nomor (default 1): " win_choice
 
 case $win_choice in
-  2) VERSION="11l" ;;
-  3) VERSION="11e" ;;
-  4) VERSION="10" ;;
-  5) VERSION="10l" ;;
-  6) VERSION="10e" ;;
-  *) VERSION="11" ;;
+02 | 2) VERSION="11l" ;;
+03 | 3) VERSION="11e" ;;
+04 | 4) VERSION="10" ;;
+05 | 5) VERSION="10l" ;;
+06 | 6) VERSION="10e" ;;
+01 | 1 | *) VERSION="11" ;;  # Default ke 11 jika kosong atau tidak valid
 esac
 
 # --- USERNAME & PASSWORD ---
@@ -27,7 +27,6 @@ echo
 # --- DISK SIZE OTOMATIS ---
 DISK_SIZE=$(df --output=size / | tail -n 1)
 DISK_SIZE_GB=$((DISK_SIZE / 1024 / 1024))
-# Gunakan 80% dari total VPS disk sebagai ukuran disk Windows
 CALC_DISK=$((DISK_SIZE_GB * 80 / 100))G
 
 # --- PORT ---
@@ -56,4 +55,3 @@ docker run -d --name windows \
   --privileged \
   --restart unless-stopped \
   dockurr/windows
-  
