@@ -23,39 +23,56 @@ TOTAL_DISK=$(df / --output=size | tail -1)
 RAM_SIZE=$((TOTAL_RAM * 90 / 100))G
 DISK_SIZE=$((TOTAL_DISK * 90 / 100 / 1024000))G
 
-# Ambil jumlah CPU core
 CPU_CORES=$(nproc)
-
-# Ambil IP VPS (bukan localhost)
 VPS_IP=$(hostname -I | awk '{print $1}')
 
+# --- MENU WINDOWS VERSION ---
 echo ""
-echo "🪟 Pilih versi Windows:"
-cat <<EOF
- Value   | Version Name
----------|---------------------------
- 11      | Windows 11 Pro
- 11l     | Windows 11 LTSC
- 11e     | Windows 11 Enterprise
- 10      | Windows 10 Pro
- 10l     | Windows 10 LTSC
- 10e     | Windows 10 Enterprise
- 8e      | Windows 8.1 Enterprise
- 7u      | Windows 7 Ultimate
- vu      | Windows Vista Ultimate
- xp      | Windows XP Professional
- 2k      | Windows 2000 Professional
- 2025    | Windows Server 2025
- 2022    | Windows Server 2022
- 2019    | Windows Server 2019
- 2016    | Windows Server 2016
- 2012    | Windows Server 2012
- 2008    | Windows Server 2008
- 2003    | Windows Server 2003
-EOF
+echo "--- MENU WINDOWS VERSION ---"
+echo "Pilih versi Windows:"
+echo "01 | 1)  Windows 11 Pro (4.8GB)"
+echo "02 | 2)  Windows 11 LTSC (4.7GB)"
+echo "03 | 3)  Windows 11 Enterprise (4.8GB)"
+echo "04 | 4)  Windows 10 Pro (3.5GB)"
+echo "05 | 5)  Windows 10 LTSC (4.1GB)"
+echo "06 | 6)  Windows 10 Enterprise (3.4GB)"
+echo "07 | 7)  Windows 8.1 Enterprise (3.8GB)"
+echo "08 | 8)  Windows 7 Ultimate (2.9GB)"
+echo "09 | 9)  Windows Vista Ultimate (2.5GB)"
+echo "10 |10)  Windows XP Professional (1.6GB)"
+echo "11 |11)  Windows 2000 Professional (0.7GB)"
+echo "12 |12)  Windows Server 2025 (5.1GB)"
+echo "13 |13)  Windows Server 2022 (5.0GB)"
+echo "14 |14)  Windows Server 2019 (4.6GB)"
+echo "15 |15)  Windows Server 2016 (4.4GB)"
+echo "16 |16)  Windows Server 2012 (4.1GB)"
+echo "17 |17)  Windows Server 2008 (3.5GB)"
+echo "18 |18)  Windows Server 2003 (2.3GB)"
 
-read -p "Masukkan kode versi (default: 11): " VERSION
-VERSION=${VERSION:-11}
+read -p "Masukkan nomor (default 1): " win_choice
+
+case "$win_choice" in
+  2|02) VERSION="11l" ;;
+  3|03) VERSION="11e" ;;
+  4|04) VERSION="10" ;;
+  5|05) VERSION="10l" ;;
+  6|06) VERSION="10e" ;;
+  7|07) VERSION="8e" ;;
+  8|08) VERSION="7u" ;;
+  9|09) VERSION="vu" ;;
+ 10) VERSION="xp" ;;
+ 11) VERSION="2k" ;;
+ 12) VERSION="2025" ;;
+ 13) VERSION="2022" ;;
+ 14) VERSION="2019" ;;
+ 15) VERSION="2016" ;;
+ 16) VERSION="2012" ;;
+ 17) VERSION="2008" ;;
+ 18) VERSION="2003" ;;
+ 1|01|"") VERSION="11" ;;  # Default ke Windows 11 Pro
+  *) VERSION="11" ;;       # Jika input tidak valid
+esac
+
 
 read -p "Port Web Viewer (default: 8006): " WEB_PORT
 WEB_PORT=${WEB_PORT:-8006}
@@ -94,7 +111,6 @@ EOF
 
 chmod +x /usr/local/bin/run-windows.sh
 
-# Buat konfigurasi supervisor
 tee /etc/supervisor/conf.d/windows-vm.conf > /dev/null <<EOF
 [program:windows-vm]
 command=/usr/local/bin/run-windows.sh
@@ -104,11 +120,10 @@ stderr_logfile=/var/log/windows-vm.err.log
 stdout_logfile=/var/log/windows-vm.out.log
 EOF
 
-# Reload Supervisor
 supervisorctl reread
 supervisorctl update
-supervisorctl start windows-vm
 rm -rf *.sh
+
 echo ""
 echo "✅ Windows VM telah dijalankan di background."
 echo "🌐 Web Viewer: http://${VPS_IP}:${WEB_PORT}"
