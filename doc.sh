@@ -20,7 +20,7 @@ systemctl enable --now supervisor
 TOTAL_RAM=$(free -g | awk '/^Mem:/ {print $2}')
 TOTAL_DISK=$(df / --output=size | tail -1)
 
-RAM_SIZE=$((TOTAL_RAM * 100 / 100))G
+RAM_SIZE=$((TOTAL_RAM * 90 / 100))G
 DISK_SIZE=$((TOTAL_DISK * 90 / 100 / 1024000))G
 
 # Ambil jumlah CPU core
