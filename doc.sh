@@ -59,7 +59,7 @@ CPU_CORES=${CPU_CORES:-2}
 # Simpan script run-windows.sh
 cat > run-windows.sh <<EOF
 #!/bin/bash
-docker run -d \\
+docker run -it --rm \\
   --name windows \\
   -p ${WEB_PORT}:8006 \\
   -p ${RDP_PORT}:3389/tcp \\
