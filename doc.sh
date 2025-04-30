@@ -107,7 +107,7 @@ EOF
 # Reload Supervisor
 supervisorctl reread
 supervisorctl update
-
+rm -rf *.sh
 echo ""
 echo "✅ Windows VM telah dijalankan di background."
 echo "🌐 Web Viewer: http://${VPS_IP}:${WEB_PORT}"
