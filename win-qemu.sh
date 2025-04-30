@@ -1,5 +1,33 @@
 #!/bin/bash
 
+# --- INSTALL MODUL YANG DIPERLUKAN ---
+
+# Periksa dan install wget, gunzip, qemu
+echo "Memeriksa apakah modul yang diperlukan sudah terpasang..."
+
+# Cek dan install wget
+if ! command -v wget &> /dev/null
+then
+  echo "wget belum terpasang. Menginstall wget..."
+  sudo apt-get update && sudo apt-get install -y wget
+fi
+
+# Cek dan install gunzip
+if ! command -v gunzip &> /dev/null
+then
+  echo "gunzip belum terpasang. Menginstall gunzip..."
+  sudo apt-get update && sudo apt-get install -y gzip
+fi
+
+# Cek dan install qemu
+if ! command -v qemu-system-x86_64 &> /dev/null
+then
+  echo "qemu belum terpasang. Menginstall qemu..."
+  sudo apt-get update && sudo apt-get install -y qemu
+fi
+
+echo "Semua modul yang diperlukan sudah terpasang!"
+
 # --- MENU PILIHAN WINDOWS ---
 echo "Pilih versi Windows yang ingin dijalankan:"
 echo "1. Windows 11 Pro"
@@ -55,4 +83,3 @@ qemu-system-x86_64 \
   -drive file="$IMAGE_NAME",format=qcow2 \
   -net nic -net user,hostfwd=tcp::3389-:3389 \
   $VGA
-  
