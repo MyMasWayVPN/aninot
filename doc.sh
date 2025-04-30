@@ -2,15 +2,32 @@
 
 set -e
 
-mkdir -p ~/docker-windows-vm/windows
-cd ~/docker-windows-vm
+# Pastikan script dijalankan sebagai root
+if [[ $EUID -ne 0 ]]; then
+  echo "❌ Jalankan script ini sebagai root: sudo $0"
+  exit 1
+fi
+
+echo "🔧 Menginstall dependensi..."
+apt update
+apt install -y docker.io supervisor curl
+
+# Aktifkan Docker & Supervisor
+systemctl enable --now docker
+systemctl enable --now supervisor
 
 # Hitung sumber daya
 TOTAL_RAM=$(free -g | awk '/^Mem:/ {print $2}')
 TOTAL_DISK=$(df / --output=size | tail -1)
 
-RAM_SIZE=$((TOTAL_RAM * 90 / 100))G
-DISK_SIZE=$((TOTAL_DISK * 80 / 100 / 1024))G
+RAM_SIZE=$((TOTAL_RAM * 100 / 100))G
+DISK_SIZE=$((TOTAL_DISK * 90 / 100 / 1024000))G
+
+# Ambil jumlah CPU core
+CPU_CORES=$(nproc)
+
+# Ambil IP VPS (bukan localhost)
+VPS_IP=$(hostname -I | awk '{print $1}')
 
 echo ""
 echo "🪟 Pilih versi Windows:"
@@ -53,13 +70,10 @@ read -sp "Password (default: admin): " PASSWORD
 echo
 PASSWORD=${PASSWORD:-admin}
 
-read -p "Jumlah CPU core (default: 2): " CPU_CORES
-CPU_CORES=${CPU_CORES:-2}
-
 # Simpan script run-windows.sh
-cat > run-windows.sh <<EOF
+cat > /usr/local/bin/run-windows.sh <<EOF
 #!/bin/bash
-docker run -it --rm \\
+docker run --rm \\
   --name windows \\
   -p ${WEB_PORT}:8006 \\
   -p ${RDP_PORT}:3389/tcp \\
@@ -73,40 +87,30 @@ docker run -it --rm \\
   -e DISK_SIZE="${DISK_SIZE}" \\
   -e RAM_SIZE="${RAM_SIZE}" \\
   -e CPU_CORES="${CPU_CORES}" \\
-  -v "\$PWD/windows:/storage" \\
+  -v "/root/docker-windows-vm/windows:/storage" \\
   --stop-timeout 120 \\
   dockurr/windows
 EOF
 
-chmod +x run-windows.sh
+chmod +x /usr/local/bin/run-windows.sh
 
-# Buat systemd unit file
-sudo tee /etc/systemd/system/docker-windows.service > /dev/null <<EOF
-[Unit]
-Description=Auto Start Windows VM Container
-After=docker.service
-Requires=docker.service
-
-[Service]
-Restart=always
-ExecStart=/home/$USER/docker-windows-vm/run-windows.sh
-ExecStop=/usr/bin/docker stop windows
-User=$USER
-WorkingDirectory=/home/$USER/docker-windows-vm
-TimeoutStopSec=120
-
-[Install]
-WantedBy=multi-user.target
+# Buat konfigurasi supervisor
+tee /etc/supervisor/conf.d/windows-vm.conf > /dev/null <<EOF
+[program:windows-vm]
+command=/usr/local/bin/run-windows.sh
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/windows-vm.err.log
+stdout_logfile=/var/log/windows-vm.out.log
 EOF
 
-# Enable dan jalankan service
-sudo systemctl daemon-reload
-sudo systemctl enable docker-windows.service
-sudo systemctl start docker-windows.service
+# Reload Supervisor
+supervisorctl reread
+supervisorctl update
 
 echo ""
-echo "✅ Windows VM telah berjalan di background."
-echo "🌐 Web Viewer: http://localhost:${WEB_PORT}"
-echo "🖥️  RDP: localhost:${RDP_PORT}"
-echo "🔁 Service aktif: docker-windows.service"
-echo "📂 Penyimpanan VM: ~/docker-windows-vm/windows"
+echo "✅ Windows VM telah dijalankan di background."
+echo "🌐 Web Viewer: http://${VPS_IP}:${WEB_PORT}"
+echo "🖥️  RDP: ${VPS_IP}:${RDP_PORT}"
+echo "🔁 Service aktif: Supervisor (windows-vm)"
+echo "📂 Penyimpanan VM: /root/docker-windows-vm/windows"
